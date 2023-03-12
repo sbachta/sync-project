@@ -1,0 +1,12 @@
+.idea/!*/.xml
+.idea/libaries/**
+.idea/modules/**
+**/*.iml
+**/*.ipr
+!.idea/inspectionProfiles/*.xml
+!.idea/dictionaries/*.xml
+
+**/out/
+**/build/
+**/.gradle/
+**/*secret*
