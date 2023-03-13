@@ -1,12 +1,14 @@
-.idea/!*/.xml
-.idea/libaries/**
-.idea/modules/**
-**/*.iml
-**/*.ipr
-!.idea/inspectionProfiles/*.xml
-!.idea/dictionaries/*.xml
+.gradle
+build/
+!gradle/wrapper/gradle-wrapper.jar
+!**/src/main/**/build/
+!**/src/test/**/build/
 
-**/out/
-**/build/
-**/.gradle/
-**/*secret*
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+out/
+!**/src/main/**/out/
+!**/src/test/**/out/
