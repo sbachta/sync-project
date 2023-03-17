@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class RegisterController {
 
     private final Service<RegistrationData, Boolean> registrationService;
+
     public RegisterController(
             Service<RegistrationData, Boolean> registrationService
     ) {
@@ -21,6 +22,7 @@ public class RegisterController {
     @PostMapping("/register")
     public ResponseEntity register(@RequestBody final RegistrationData body) {
         return registrationService.serve(body).map(
-                present -> ResponseEntity.status(present ? HttpStatus.CREATED : HttpStatus.BAD_REQUEST).build()).get();
+                present -> ResponseEntity.status(present ? HttpStatus.CREATED : HttpStatus.BAD_REQUEST).build()).orElse(
+                        ResponseEntity.status(HttpStatus.BAD_REQUEST).build());
     }
 }

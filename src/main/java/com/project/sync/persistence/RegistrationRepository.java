@@ -22,8 +22,8 @@ public class RegistrationRepository implements CreateRepository<RegistrationData
         try {
             dslContext.executeInsert(
                     new UsersRecord(
-                            registrationData.getUsername(),
-                            registrationData.getPassword(),
+                            registrationData.getUserData().getUsername(),
+                            registrationData.getUserData().getPassword(),
                             registrationData.getEmail()
                     ));
             return Optional.of(true);

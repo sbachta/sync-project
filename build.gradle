@@ -32,17 +32,21 @@ dependencies {
 			'org.jooq:jooq-meta:3.18.0',
 			'org.jooq:jooq-codegen:3.18.0',
 	)
+	annotationProcessor("org.projectlombok:lombok:1.18.26")
+
 	runtimeOnly(
 			'org.mariadb.jdbc:mariadb-java-client',
 			'com.h2database:h2'
 	)
 	compileOnly('org.projectlombok:lombok:1.18.26')
-	annotationProcessor("org.projectlombok:lombok:1.18.26")
-	testImplementation('org.projectlombok:lombok:1.18.26')
-	testAnnotationProcessor("org.projectlombok:lombok:1.18.26")
 
-	testImplementation 'org.springframework.boot:spring-boot-starter-test'
-	testImplementation 'org.springframework.cloud:spring-cloud-stream-test-binder'
+	testImplementation(
+			'org.springframework.cloud:spring-cloud-stream-test-binder',
+			'org.springframework.cloud:spring-cloud-contract-wiremock',
+			'org.springframework.boot:spring-boot-starter-test',
+			'org.projectlombok:lombok:1.18.26',
+	)
+	testAnnotationProcessor("org.projectlombok:lombok:1.18.26")
 
 	jooqGenerator(
 			'com.h2database:h2',

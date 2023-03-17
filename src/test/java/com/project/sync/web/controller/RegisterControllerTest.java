@@ -3,6 +3,7 @@ package com.project.sync.web.controller;
 import com.github.javafaker.Faker;
 import com.project.sync.helpers.Service;
 import com.project.sync.models.RegistrationData;
+import com.project.sync.models.UserData;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,12 +38,15 @@ class RegisterControllerTest {
     private final Faker  faker    = new Faker();
     private final String username = faker.name().username();
     private final String password = faker.internet().password();
-    private final String email    = faker.internet().emailAddress();
-    private final String body     = "{\n" +
-                                    "  \"username\": \"" + username + "\",\n" +
-                                    "  \"password\": \"" + password + "\",\n" +
-                                    "  \"email\": \"" + email + "\"\n" +
-                                    "}";
+    private final String email = faker.internet().emailAddress();
+    private final String body  = "{\n" +
+                                 "  \"userData\": {\n" +
+                                 "    \"username\": \""+username+"\",\n" +
+                                 "    \"password\": \""+password+"\"\n" +
+                                 "  }" +
+                                 ", \n" +
+                                 "  \"email\": \"" + email + "\"\n" +
+                                 "}";
 
     @Test
     void shouldCallRegistrationServiceToPassRegistrationData() throws Exception {
@@ -53,10 +57,12 @@ class RegisterControllerTest {
                                 .content(body));
 
         verify(registrationService).serve(RegistrationData.builder()
-                                                             .username(username)
-                                                             .password(password)
-                                                             .email(email)
-                                                             .build());
+                                                          .userData(UserData.builder()
+                                                                            .username(username)
+                                                                            .password(password)
+                                                                            .build())
+                                                          .email(email)
+                                                          .build());
     }
 
     @Test
@@ -77,5 +83,15 @@ class RegisterControllerTest {
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(body))
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void shouldReturn400WhenOptionalIsEmpty() throws Exception {
+        when(registrationService.serve(any())).thenReturn(Optional.empty());
+
+        mockMvc.perform(post("/register")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(body))
+               .andExpect(status().isBadRequest());
     }
 }

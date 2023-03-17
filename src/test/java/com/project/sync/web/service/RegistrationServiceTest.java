@@ -4,6 +4,7 @@ import com.github.javafaker.Faker;
 import com.project.sync.helpers.CreateRepository;
 import com.project.sync.helpers.Service;
 import com.project.sync.models.RegistrationData;
+import com.project.sync.models.UserData;
 import org.junit.jupiter.api.Test;
 
 import java.util.Optional;
@@ -19,8 +20,10 @@ class RegistrationServiceTest {
     private final Faker            faker            = new Faker();
     private final RegistrationData registrationData = RegistrationData.builder()
                                                                       .email(faker.internet().emailAddress())
-                                                                      .password(faker.internet().password())
-                                                                      .username(faker.name().username())
+                                                                      .userData(UserData.builder()
+                                                                                        .password(faker.internet().password())
+                                                                                        .username(faker.name().username())
+                                                                                        .build())
                                                                       .build();
 
 

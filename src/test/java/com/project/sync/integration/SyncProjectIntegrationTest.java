@@ -1,46 +1,44 @@
 package com.project.sync.integration;
 
 import com.project.sync.tables.records.UsersRecord;
-import org.jooq.DSLContext;
+import org.intellij.lang.annotations.Language;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.test.web.servlet.MockMvc;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static com.project.sync.tables.Users.USERS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest()
 @ExtendWith(SpringExtension.class)
-@AutoConfigureMockMvc
-@ActiveProfiles("test")
-public class SyncProjectIntegrationTest {
+public class SyncProjectIntegrationTest extends BaseIntegrationTest {
 
-    @Autowired
-    protected DSLContext db;
-    @Autowired
-    protected MockMvc    mockMvc;
-
+    @Override
     @BeforeEach
     void setUp() {
-        db.deleteFrom(USERS).execute();
+        super.setUp();
+    }
+
+    @Override
+    @AfterEach
+    void tearDown() {
+        super.tearDown();
     }
 
     @Test
     void shouldRegisterUserAndSaveInfoInDB() throws Exception {
-        String registerBody = "{\n" +
-                              "  \"username\": \"someUserName\",\n" +
-                              "  \"password\": \"someSecretPassword\",\n" +
-                              "  \"email\": \"someTotallyReal@email.com\"\n" +
-                              "}";
+        @Language("JSON") String registerBody = "{\n" +
+                                                "  \"userData\": {\n" +
+                                                "    \"username\": \"someUserName\",\n" +
+                                                "    \"password\": \"someSecretPassword\"\n" +
+                                                "  },\n" +
+                                                "  \"email\": \"someTotallyReal@email.com\"\n" +
+                                                "}";
 
         mockMvc.perform(post("/register")
                                 .contentType(MediaType.APPLICATION_JSON)
@@ -55,13 +53,72 @@ public class SyncProjectIntegrationTest {
     }
 
     @Test
-    void shouldUploadImageForRegisteredUser() {
-        
+    void shouldUploadImageForRegisteredUser() throws Exception {
+        db.insertInto(USERS, USERS.EMAIL, USERS.PASSWORD, USERS.USERNAME)
+          .values("thisemail@address.com", "someSecretPassword", "someUserName")
+          .execute();
+
+        final String imageUploadBody = "{\n" +
+                                 "  \"userData\": {\n" +
+                                 "    \"username\": \"someUserName\",\n" +
+                                 "    \"password\": \"someSecretPassword\"\n" +
+                                 "  },\n" +
+                                 "  \"imageInfo\": \"lotsOfRandomStuff\"\n" +
+                                 "}";
+
+        mockMvc.perform(post("/upload")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(imageUploadBody))
+               .andExpect(status().isOk());
+
+        verify(postRequestedFor(urlPathEqualTo("/context/mockImage"))
+                       .withHeader("Authorization", equalTo("Client-ID 6793794c2fd47e5")));
     }
 
     @Test
-    void shouldDeleteImageForRegisteredUser() {
+    void shouldViewImageForRegisteredUser() throws Exception {
+        db.insertInto(USERS, USERS.EMAIL, USERS.PASSWORD, USERS.USERNAME)
+          .values("thisemail@address.com", "someSecretPassword", "someUserName")
+          .execute();
 
+        final String imageViewBody = "{\n" +
+                                       "  \"userData\": {\n" +
+                                       "    \"username\": \"someUserName\",\n" +
+                                       "    \"password\": \"someSecretPassword\"\n" +
+                                       "  },\n" +
+                                       "  \"imageInfo\": \"lotsOfRandomStuff\"\n" +
+                                       "}";
+
+        mockMvc.perform(post("/view")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(imageViewBody))
+               .andExpect(status().isOk());
+
+        verify(getRequestedFor(urlPathEqualTo("/context/mockImage/lotsOfRandomStuff"))
+                       .withHeader("Authorization", equalTo("Client-ID 6793794c2fd47e5")));
+    }
+
+    @Test
+    void shouldDeleteImageForRegisteredUser() throws Exception {
+        db.insertInto(USERS, USERS.EMAIL, USERS.PASSWORD, USERS.USERNAME)
+          .values("thisemail@address.com", "someSecretPassword", "someUserName")
+          .execute();
+
+        final String imageDeleteBody = "{\n" +
+                                       "  \"userData\": {\n" +
+                                       "    \"username\": \"someUserName\",\n" +
+                                       "    \"password\": \"someSecretPassword\"\n" +
+                                       "  },\n" +
+                                       "  \"imageInfo\": \"lotsOfRandomStuff\"\n" +
+                                       "}";
+
+        mockMvc.perform(post("/delete")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(imageDeleteBody))
+               .andExpect(status().isOk());
+
+        verify(deleteRequestedFor(urlPathEqualTo("/context/mockImage/lotsOfRandomStuff"))
+                       .withHeader("Authorization", equalTo("Client-ID 6793794c2fd47e5")));
     }
 }
 
