@@ -14,6 +14,8 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static com.project.sync.tables.Users.USERS;
+import static org.apache.http.HttpHeaders.CONTENT_TYPE;
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
@@ -21,7 +23,8 @@ import static com.project.sync.tables.Users.USERS;
 @SpringBootTest(properties = {
         "imgur.host=http://localhost:${wiremock.server.port}",
         "imgur.context=/context",
-        "imgur.image-endpoint=/mockImage"
+        "imgur.image-endpoint=/mockImage",
+        "imgur.account-endpoint=/mockAccount"
 })
 public abstract class BaseIntegrationTest {
 
@@ -29,6 +32,20 @@ public abstract class BaseIntegrationTest {
     protected DSLContext db;
     @Autowired
     protected MockMvc    mockMvc;
+
+    private final String responseFromAccount = "{\n" +
+                                               "  \"id\": 48437714,\n" +
+                                               "  \"url\": \"ghostinspector\",\n" +
+                                               "  \"bio\": null,\n" +
+                                               "  \"avatar\": null,\n" +
+                                               "  \"reputation\": 0,\n" +
+                                               "  \"reputation_name\": \"Neutral\",\n" +
+                                               "  \"created\": 1481839668,\n" +
+                                               "  \"pro_expiration\": false,\n" +
+                                               "  \"user_follow\": {\n" +
+                                               "    \"status\": false\n" +
+                                               "  }\n" +
+                                               "}";
 
     @BeforeEach
     void setUp() {
@@ -41,6 +58,10 @@ public abstract class BaseIntegrationTest {
 
         stubFor(delete(urlPathEqualTo("/context/mockImage/lotsOfRandomStuff"))
                         .willReturn(ok()));
+
+        stubFor(get(urlPathEqualTo("/context/mockAccount/someUserName"))
+                        .willReturn(ok().withBody(responseFromAccount)
+                                        .withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)));
     }
 
     @AfterEach

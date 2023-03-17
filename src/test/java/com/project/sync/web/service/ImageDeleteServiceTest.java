@@ -17,9 +17,9 @@ import static org.mockito.Mockito.*;
 
 class ImageDeleteServiceTest {
 
-    private final ReadRepository<ImageData>   validationRepository = mock(ReadRepository.class);
+    private final ReadRepository<UserData>    validationRepository = mock(ReadRepository.class);
     @Qualifier("DeleteClient")
-    private final Client<ImageData, Boolean>  deleteClient           = mock(Client.class);
+    private final Client<ImageData, Boolean>  deleteClient         = mock(Client.class);
     private final Service<ImageData, Boolean> subject              = new ImageDeleteService(
             validationRepository,
             deleteClient
@@ -40,7 +40,7 @@ class ImageDeleteServiceTest {
 
         subject.serve(imageData);
 
-        verify(validationRepository).read(imageData);
+        verify(validationRepository).read(imageData.getUserData());
     }
 
     @Test

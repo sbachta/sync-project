@@ -17,10 +17,10 @@ import static org.mockito.Mockito.*;
 
 class ImageViewServiceTest {
 
-    private final ReadRepository<ImageData>   validationRepository = mock(ReadRepository.class);
+    private final ReadRepository<UserData>    validationRepository = mock(ReadRepository.class);
     @Qualifier("ViewClient")
-    private final     Client<ImageData, Boolean>  viewClient         = mock(Client.class);
-    private final     Service<ImageData, Boolean> subject              = new ImageViewService(
+    private final Client<ImageData, Boolean>  viewClient           = mock(Client.class);
+    private final Service<ImageData, Boolean> subject              = new ImageViewService(
             validationRepository,
             viewClient
     );
@@ -40,7 +40,7 @@ class ImageViewServiceTest {
 
         subject.serve(imageData);
 
-        verify(validationRepository).read(imageData);
+        verify(validationRepository).read(imageData.getUserData());
     }
 
     @Test

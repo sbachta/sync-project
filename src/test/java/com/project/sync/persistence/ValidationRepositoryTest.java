@@ -1,7 +1,6 @@
 package com.project.sync.persistence;
 
 import com.project.sync.helpers.ReadRepository;
-import com.project.sync.models.ImageData;
 import com.project.sync.models.UserData;
 import org.jooq.DSLContext;
 import org.junit.jupiter.api.AfterEach;
@@ -25,15 +24,12 @@ class ValidationRepositoryTest {
     private DSLContext db;
 
     @Autowired
-    private ReadRepository<ImageData> subject;
+    private ReadRepository<UserData> subject;
 
-    private final ImageData imageData = ImageData.builder()
-                                                 .imageInfo("someImageInfo")
-                                                 .userData(UserData.builder()
-                                                                   .password("password")
-                                                                   .username("username")
-                                                                   .build())
-                                                 .build();
+    private final UserData userData = UserData.builder()
+                                              .password("password")
+                                              .username("username")
+                                              .build();
 
     @BeforeEach
     void setUp() {
@@ -48,17 +44,20 @@ class ValidationRepositoryTest {
     @Test
     void shouldReturnOptionalTrueIfUsernamePasswordComboArePresentInDb() {
         db.insertInto(USERS, USERS.EMAIL, USERS.PASSWORD, USERS.USERNAME)
-          .values("someRealEmail@address.com", imageData.getUserData().getPassword(), imageData.getUserData().getUsername())
+          .values(
+                  "someRealEmail@address.com", userData.getPassword(),
+                  userData.getUsername()
+          )
           .execute();
 
-        Optional<Boolean> actual = subject.read(imageData);
+        Optional<Boolean> actual = subject.read(userData);
 
         assertThat(actual).isEqualTo(Optional.of(true));
     }
 
     @Test
     void shouldReturnOptionalFalseIfUsernameIsNotPresent() {
-        Optional<Boolean> actual = subject.read(imageData);
+        Optional<Boolean> actual = subject.read(userData);
 
         assertThat(actual).isEqualTo(Optional.of(false));
     }
@@ -66,10 +65,10 @@ class ValidationRepositoryTest {
     @Test
     void shouldReturnOptionalFalseIfPasswordDoesNotMatchForUsername() {
         db.insertInto(USERS, USERS.EMAIL, USERS.PASSWORD, USERS.USERNAME)
-          .values("someRealEmail@address.com", "someWrongPassword", imageData.getUserData().getUsername())
+          .values("someRealEmail@address.com", "someWrongPassword", userData.getUsername())
           .execute();
 
-        Optional<Boolean> actual = subject.read(imageData);
+        Optional<Boolean> actual = subject.read(userData);
 
         assertThat(actual).isEqualTo(Optional.of(false));
     }

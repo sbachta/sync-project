@@ -16,7 +16,7 @@ import static org.mockito.Mockito.*;
 
 class ImageUploadServiceTest {
 
-    private final ReadRepository<ImageData>  validationRepository = mock(ReadRepository.class);
+    private final ReadRepository<UserData>  validationRepository = mock(ReadRepository.class);
     @Qualifier("UploadClient")
     private final Client<ImageData, Boolean> uploadClient         = mock(Client.class);
     private final Service<ImageData, Boolean>     subject              = new ImageUploadService(
@@ -39,7 +39,7 @@ class ImageUploadServiceTest {
 
         subject.serve(imageData);
 
-        verify(validationRepository).read(imageData);
+        verify(validationRepository).read(imageData.getUserData());
     }
 
     @Test

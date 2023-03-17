@@ -13,6 +13,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static com.project.sync.tables.Users.USERS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ExtendWith(SpringExtension.class)
@@ -118,6 +119,41 @@ public class SyncProjectIntegrationTest extends BaseIntegrationTest {
                .andExpect(status().isOk());
 
         verify(deleteRequestedFor(urlPathEqualTo("/context/mockImage/lotsOfRandomStuff"))
+                       .withHeader("Authorization", equalTo("Client-ID 6793794c2fd47e5")));
+    }
+
+    @Test
+    void shouldGetBasicUserInfo() throws Exception {
+        db.insertInto(USERS, USERS.EMAIL, USERS.PASSWORD, USERS.USERNAME)
+          .values("thisemail@address.com", "someSecretPassword", "someUserName")
+          .execute();
+
+        final String responseBody = "{\n" +
+                                    "  \"id\": 48437714,\n" +
+                                    "  \"url\": \"ghostinspector\",\n" +
+                                    "  \"bio\": null,\n" +
+                                    "  \"avatar\": null,\n" +
+                                    "  \"reputation\": 0,\n" +
+                                    "  \"reputation_name\": \"Neutral\",\n" +
+                                    "  \"created\": 1481839668,\n" +
+                                    "  \"pro_expiration\": false,\n" +
+                                    "  \"user_follow\": {\n" +
+                                    "    \"status\": false\n" +
+                                    "  }\n" +
+                                    "}";
+
+        @Language("JSON") final String imageDeleteBody = "{\n" +
+                                                         "  \"username\": \"someUserName\",\n" +
+                                                         "  \"password\": \"someSecretPassword\"\n" +
+                                                         "}";
+
+        mockMvc.perform(post("/account-info")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(imageDeleteBody))
+               .andExpect(content().json(responseBody))
+               .andExpect(status().isOk());
+
+        verify(getRequestedFor(urlPathEqualTo("/context/mockAccount/someUserName"))
                        .withHeader("Authorization", equalTo("Client-ID 6793794c2fd47e5")));
     }
 }
