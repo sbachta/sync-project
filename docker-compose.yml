@@ -1,0 +1,19 @@
+version: "3"
+
+services:
+  registration-db:
+    image: mariadb:10.5.1
+    restart: always
+    environment:
+      - MYSQL_ALLOW_EMPTY_PASSWORD=true
+      - MYSQL_PASSWORD=registration_password
+      - MYSQL_USER=registration_user
+      - MYSQL_DATABASE=registration_db
+    command: mysqld --max-connections=9000
+    ports:
+      - "3306:3306"
+  rabbitmq:
+    image: rabbitmq:management
+    ports:
+      - "5672:5672"
+      - "15672:15672"

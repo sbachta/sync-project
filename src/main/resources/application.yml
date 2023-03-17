@@ -1,0 +1,10 @@
+server:
+  port: 8080
+  servlet:
+    context-path: /sync/app
+
+spring:
+  datasource:
+    url: jdbc:mariadb://localhost:3306/registration_db
+    username: registration_user
+    password: registration_password

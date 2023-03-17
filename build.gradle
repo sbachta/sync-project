@@ -2,6 +2,8 @@ plugins {
 	id 'java'
 	id 'org.springframework.boot' version '3.0.4'
 	id 'io.spring.dependency-management' version '1.1.0'
+	id 'org.flywaydb.flyway' version '9.0.1'
+	id 'nu.studer.jooq' version '8.1'
 }
 
 group = 'com.project'
@@ -18,19 +20,80 @@ ext {
 
 dependencies {
 	implementation (
-			'org.springframework.boot:spring-boot-starter-oauth2-client',
+//			'org.springframework.boot:spring-boot-starter-oauth2-client',
+			'org.springframework.boot:spring-boot-starter-data-jpa',
+			'org.springframework.boot:spring-boot-starter-jdbc',
 			'org.springframework.boot:spring-boot-starter-web',
 			'org.springframework.cloud:spring-cloud-stream',
+			'com.github.javafaker:javafaker:1.0.2',
+			'org.flywaydb:flyway-core:9.0.1',
+			'org.flywaydb:flyway-mysql:9.0.1',
+			'org.jooq:jooq:3.18.0',
+			'org.jooq:jooq-meta:3.18.0',
+			'org.jooq:jooq-codegen:3.18.0',
 	)
-	runtimeOnly 'com.h2database:h2'
+	runtimeOnly(
+			'org.mariadb.jdbc:mariadb-java-client',
+			'com.h2database:h2'
+	)
+	compileOnly('org.projectlombok:lombok:1.18.26')
+	annotationProcessor("org.projectlombok:lombok:1.18.26")
+	testImplementation('org.projectlombok:lombok:1.18.26')
+	testAnnotationProcessor("org.projectlombok:lombok:1.18.26")
+
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.cloud:spring-cloud-stream-test-binder'
+
+	jooqGenerator(
+			'com.h2database:h2',
+			'org.mariadb.jdbc:mariadb-java-client',
+			'org.jooq:jooq-meta-extensions:3.18.0',
+	)
 }
 
 dependencyManagement {
 	imports {
 		mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
 	}
+}
+
+jooq {
+	configurations {
+		main {
+			generationTool {
+				jdbc {
+					url = 'jdbc:mariadb://localhost:3306/registration_db'
+					user = 'registration_user'
+					password = 'registration_password'
+				}
+				generator {
+					name = 'org.jooq.codegen.DefaultGenerator'
+					database {
+						inputSchema = 'registration_db'
+					}
+					generate {
+						deprecated = false
+						records = true
+						immutablePojos = true
+						fluentSetters = true
+					}
+					target {
+						packageName = 'com.project.sync'
+						directory = 'build/generated-src/jooq/main'  // default (can be omitted)
+					}
+					strategy.name = 'org.jooq.codegen.DefaultGeneratorStrategy'
+				}
+			}
+		}
+	}
+}
+
+flyway {
+	url = "jdbc:mariadb://localhost:3306/registration_db"
+	user = 'registration_user'
+	password = 'registration_password'
+	schemas = ['registration_db']
+	locations = ["filesystem:$project.projectDir/src/main/resources/db/migration"]
 }
 
 tasks.named('test') {
